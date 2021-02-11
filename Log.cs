@@ -31,9 +31,10 @@ namespace LogRecord
 		/// <param name="filename">保存するファイル名</param>
 		internal Log(string filename)
 		{
-			logWrite(AppDomain.CurrentDomain.BaseDirectory + filename);
 			// 例外を出さないようにシフトJISのEncodingを取得
 			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+			// BlockingCollectionを監視しログを書き込むTaskを動作
+			logWrite(AppDomain.CurrentDomain.BaseDirectory + filename);
 		}
 
 		/// <summary>
