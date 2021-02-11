@@ -13,12 +13,12 @@ namespace LogRecord
 		/// ファイルに書き込むログの内容
 		/// using System.Collections.Concurrent;
 		/// </summary>
-		private BlockingCollection<string> msg = new BlockingCollection<string>();
+		private BlockingCollection<string> msg = new();
 
 		/// <summary>
 		/// ログTask終了命令用
 		/// </summary>
-		private CancellationTokenSource tokenSource = new CancellationTokenSource();
+		private CancellationTokenSource tokenSource = new();
 
 		/// <summary>
 		/// 書込みTaskの実体(Task終了検知)
