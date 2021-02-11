@@ -85,7 +85,7 @@ namespace LogRecord
 				// ファイルが存在してなければ作る
 				using var hStream = File.Create(fileName);
 				// 作成時に返される FileStream を利用して閉じる
-				hStream?.Close();
+				hStream.Close();
 			}
 
 			taskWait = Task.Run(async () =>
