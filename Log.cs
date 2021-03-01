@@ -55,6 +55,10 @@ namespace LogRecord
 		/// </summary>
 		public void Dispose()
 		{
+			while (msg.Count != 0)
+			{
+				await Task.Delay(10);
+			}
 			tokenSource.Cancel();
 			taskWait.Wait();
 			tokenSource = null;
