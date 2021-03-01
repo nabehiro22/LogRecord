@@ -53,7 +53,7 @@ namespace LogRecord
 		/// <summary>
 		/// 終了時の処理
 		/// </summary>
-		public void Dispose()
+		public async void Dispose()
 		{
 			while (msg.Count != 0)
 			{
