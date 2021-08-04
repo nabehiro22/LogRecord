@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LogRecord
 {
-	class Log : IDisposable
+	class Log : IDisposable, IAsyncDisposable
 	{
 		/// <summary>
 		/// ファイルに書き込むログの内容
@@ -29,12 +29,18 @@ namespace LogRecord
 		/// コンストラクタ
 		/// </summary>
 		/// <param name="filename">保存するファイル名</param>
-		internal Log(string filename)
+		/// <param name="message">追加するログ(必須ではない)</param>
+		internal Log(string filename, string message = "")
 		{
 			// 例外を出さないようにシフトJISのEncodingを取得
 			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 			// BlockingCollectionを監視しログを書き込むTaskを動作
 			logWrite(AppDomain.CurrentDomain.BaseDirectory + filename);
+			// 2番目の引数があればログを書き込む
+			if (message != "")
+			{
+				Message(message);
+			}
 		}
 
 		/// <summary>
@@ -69,6 +75,26 @@ namespace LogRecord
 		}
 
 		/// <summary>
+		/// 非同期な終了の処理
+		/// await using で使用
+		/// </summary>
+		/// <returns></returns>
+		public async ValueTask DisposeAsync()
+		{
+			while (msg.Count != 0)
+			{
+				await Task.Delay(10);
+			}
+			tokenSource.Cancel();
+			taskWait.Wait();
+			tokenSource = null;
+			msg.Dispose();
+			msg = null;
+			// これでデストラクタは呼ばれなくなるので無駄な終了処理がなくなる
+			GC.SuppressFinalize(this);
+		}
+
+		/// <summary>
 		/// ログの追加
 		/// </summary>
 		/// <param name="message">書き込むメッセージ</param>
@@ -81,13 +107,13 @@ namespace LogRecord
 		///  ログを記録
 		/// </summary>
 		/// <param name="message">エラー内容</param>
-		private void logWrite(string fileName)
+		private async void logWrite(string fileName)
 		{
 			// 最初にファイルの有無を確認
 			if (File.Exists(fileName) == false)
 			{
 				// ファイルが存在してなければ作る
-				using var hStream = File.Create(fileName);
+				await using var hStream = File.Create(fileName);
 				// 作成時に返される FileStream を利用して閉じる
 				hStream.Close();
 			}
@@ -104,10 +130,10 @@ namespace LogRecord
 							try
 							{
 								// ファイルがロックされている場合例外が発生して以下の処理は行わずリトライとなる
-								using (var stream = new FileStream(fileName, FileMode.Open)) { }
+								await using (var stream = new FileStream(fileName, FileMode.Open)) { }
 								// ログ書き込み
-								using var fs = new FileStream(fileName, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
-								using var sw = new StreamWriter(fs, Encoding.GetEncoding("Shift-JIS"));
+								await using var fs = new FileStream(fileName, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+								await using var sw = new StreamWriter(fs, Encoding.GetEncoding("Shift-JIS"));
 								sw.WriteLine(log);
 								break;
 							}

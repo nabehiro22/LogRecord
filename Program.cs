@@ -8,7 +8,7 @@ namespace LogTest
 	{
 		static async Task Main(string[] args)
 		{
-			using Log Test = new(@"\Log.txt");
+			using Log Test = new(@"\Log.txt", "TEST");
 			for (int i = 0; i < 1000; i++)
 			{
 				Test.Message(i.ToString());
